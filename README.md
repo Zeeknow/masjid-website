@@ -43,6 +43,7 @@ Use the following as a starting point in a separate agreement with any maintaine
 ## Technical notes
 
 - Content is stored in `data/site.json`; the dashboard writes updates atomically to that file. Download a JSON backup from the dashboard after important changes.
+- If a save fails after a file-sync or antivirus scan, restart the website server and retry. The server falls back to a direct write if Windows temporarily blocks the atomic file replacement.
 - Login sessions are memory-only and expire after eight hours. Restarting the server signs admins out.
 - `.env` and all environment variants are ignored by Git, except the comment-only `.env.example` template. Existing `data/admin.json` installations remain supported temporarily; rerun `npm run setup-admin -- <username> <long-password>` to migrate the active credentials to `.env`.
 - The dashboard permits a selected trusted administrator to publish text and public URLs. It rejects script tags and `javascript:` links; however, normal operational review of public content is still important.

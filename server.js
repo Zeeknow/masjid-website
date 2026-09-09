@@ -1,5 +1,5 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { createReadStream, existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, normalize, resolve } from "node:path";
 
@@ -78,9 +78,25 @@ function safeSiteConfig(value) {
 
 function writeSite(data) {
   data.updatedAt = new Date().toISOString();
-  const temporary = `${SITE_FILE}.${process.pid}.tmp`;
-  writeFileSync(temporary, JSON.stringify(data, null, 2) + "\n", { mode: 0o600 });
-  renameSync(temporary, SITE_FILE);
+  const content = JSON.stringify(data, null, 2) + "\n";
+  const temporary = `${SITE_FILE}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+  try {
+    writeFileSync(temporary, content, { mode: 0o600 });
+    renameSync(temporary, SITE_FILE);
+  } catch (error) {
+    try {
+      if (existsSync(temporary)) unlinkSync(temporary);
+    } catch {
+      // The next write uses a unique temporary filename, so cleanup can wait.
+    }
+    if (error?.code === "EACCES" || error?.code === "EPERM") {
+      // Some Windows file-sync tools temporarily prevent an atomic rename.
+      // The direct write keeps dashboard updates available in that case.
+      writeFileSync(SITE_FILE, content, { mode: 0o600 });
+      return;
+    }
+    throw error;
+  }
 }
 
 function getCookie(request, name) {
@@ -227,7 +243,12 @@ const server = createServer(async (request, response) => {
     staticFile(request, response, pathname);
   } catch (error) {
     console.error(error);
-    sendJson(response, 500, { error: "The server could not complete that request." });
+    const isWriteAccessError = error?.code === "EACCES" || error?.code === "EPERM";
+    sendJson(response, 500, {
+      error: isWriteAccessError
+        ? "The website settings file is locked or read-only. Restart the server and make sure the data folder allows writing."
+        : "The server could not complete that request. Restart the server and try saving again."
+    });
   }
 });
 
