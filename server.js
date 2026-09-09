@@ -26,6 +26,11 @@ function loadEnvironment(file) {
 
 loadEnvironment(ENV_FILE);
 const PORT = Number(process.env.PORT || 3000);
+const KV_REST_API_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
+const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
+const KV_ENABLED = Boolean(KV_REST_API_URL && KV_REST_API_TOKEN);
+const SITE_KV_KEY = "masjid-ar-rahman:site:v1";
+const SESSION_KV_PREFIX = "masjid-ar-rahman:session:";
 const sessions = new Map();
 const SESSION_MAX_AGE = 1000 * 60 * 60 * 8;
 
@@ -42,6 +47,31 @@ const MIME_TYPES = {
 
 function readJson(file) {
   return JSON.parse(readFileSync(file, "utf8"));
+}
+
+async function kvCommand(command) {
+  const response = await fetch(KV_REST_API_URL, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${KV_REST_API_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(command)
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.error) {
+    throw new Error(`KV storage request failed${payload.error ? `: ${payload.error}` : ""}`);
+  }
+  return payload.result;
+}
+
+async function readSite() {
+  if (!KV_ENABLED) return readJson(SITE_FILE);
+  const stored = await kvCommand(["GET", SITE_KV_KEY]);
+  if (stored) return JSON.parse(stored);
+  const initialSite = readJson(SITE_FILE);
+  await kvCommand(["SET", SITE_KV_KEY, JSON.stringify(initialSite)]);
+  return initialSite;
 }
 
 function configuredAdmin() {
@@ -76,9 +106,13 @@ function safeSiteConfig(value) {
   return value.identity && value.prayerLocation && value.contact && value.donations && value.social && Array.isArray(value.announcements);
 }
 
-function writeSite(data) {
+async function writeSite(data) {
   data.updatedAt = new Date().toISOString();
   const content = JSON.stringify(data, null, 2) + "\n";
+  if (KV_ENABLED) {
+    await kvCommand(["SET", SITE_KV_KEY, content]);
+    return;
+  }
   const temporary = `${SITE_FILE}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
   try {
     writeFileSync(temporary, content, { mode: 0o600 });
@@ -105,8 +139,29 @@ function getCookie(request, name) {
   return match ? decodeURIComponent(match[1]) : "";
 }
 
-function currentSession(request) {
+function sessionKey(token) {
+  return `${SESSION_KV_PREFIX}${token}`;
+}
+
+async function currentSession(request) {
   const token = getCookie(request, "masjid_session");
+  if (!token) return null;
+  if (KV_ENABLED) {
+    const stored = await kvCommand(["GET", sessionKey(token)]);
+    if (!stored) return null;
+    let session;
+    try {
+      session = JSON.parse(stored);
+    } catch {
+      await kvCommand(["DEL", sessionKey(token)]);
+      return null;
+    }
+    if (session.expires < Date.now()) {
+      await kvCommand(["DEL", sessionKey(token)]);
+      return null;
+    }
+    return { token, ...session };
+  }
   const session = sessions.get(token);
   if (!session || session.expires < Date.now()) {
     sessions.delete(token);
@@ -115,8 +170,25 @@ function currentSession(request) {
   return { token, ...session };
 }
 
-function requireAdmin(request, response) {
-  const session = currentSession(request);
+async function createSession(token, session) {
+  if (KV_ENABLED) {
+    await kvCommand(["SET", sessionKey(token), JSON.stringify(session), "EX", Math.ceil(SESSION_MAX_AGE / 1000)]);
+    return;
+  }
+  sessions.set(token, session);
+}
+
+async function deleteSession(token) {
+  if (!token) return;
+  if (KV_ENABLED) {
+    await kvCommand(["DEL", sessionKey(token)]);
+    return;
+  }
+  sessions.delete(token);
+}
+
+async function requireAdmin(request, response) {
+  const session = await currentSession(request);
   if (!session) {
     sendJson(response, 401, { error: "Please sign in to continue." });
     return null;
@@ -190,12 +262,12 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "GET" && pathname === "/api/site") {
-      sendJson(response, 200, readJson(SITE_FILE));
+      sendJson(response, 200, await readSite());
       return;
     }
 
     if (request.method === "GET" && pathname === "/api/session") {
-      const session = currentSession(request);
+      const session = await currentSession(request);
       sendJson(response, 200, { authenticated: Boolean(session), username: session?.username || null });
       return;
     }
@@ -212,16 +284,17 @@ const server = createServer(async (request, response) => {
         return;
       }
       const token = randomBytes(32).toString("hex");
-      sessions.set(token, { username: admin.username, expires: Date.now() + SESSION_MAX_AGE });
+      await createSession(token, { username: admin.username, expires: Date.now() + SESSION_MAX_AGE });
+      const isSecureRequest = process.env.VERCEL === "1" || request.headers["x-forwarded-proto"] === "https";
       sendJson(response, 200, { ok: true, username: admin.username }, {
-        "Set-Cookie": `masjid_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MAX_AGE / 1000}`
+        "Set-Cookie": `masjid_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MAX_AGE / 1000}${isSecureRequest ? "; Secure" : ""}`
       });
       return;
     }
 
     if (request.method === "POST" && pathname === "/api/logout") {
-      const session = currentSession(request);
-      if (session) sessions.delete(session.token);
+      const session = await currentSession(request);
+      if (session) await deleteSession(session.token);
       sendJson(response, 200, { ok: true }, {
         "Set-Cookie": "masjid_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"
       });
@@ -229,14 +302,14 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "PUT" && pathname === "/api/site") {
-      if (!requireAdmin(request, response)) return;
+      if (!await requireAdmin(request, response)) return;
       const site = await bodyJson(request);
       if (!safeSiteConfig(site)) {
         sendJson(response, 400, { error: "The website settings are incomplete or unsafe." });
         return;
       }
-      writeSite(site);
-      sendJson(response, 200, readJson(SITE_FILE));
+      await writeSite(site);
+      sendJson(response, 200, site);
       return;
     }
 

@@ -42,9 +42,11 @@ Use the following as a starting point in a separate agreement with any maintaine
 
 ## Technical notes
 
-- Content is stored in `data/site.json`; the dashboard writes updates atomically to that file. Download a JSON backup from the dashboard after important changes.
-- If a save fails after a file-sync or antivirus scan, restart the website server and retry. The server falls back to a direct write if Windows temporarily blocks the atomic file replacement.
-- Login sessions are memory-only and expire after eight hours. Restarting the server signs admins out.
+- Local development stores content in `data/site.json`; the dashboard writes updates atomically to that file. Download a JSON backup from the dashboard after important changes.
+- On Vercel, content and eight-hour login sessions are persisted in a Vercel Marketplace Upstash Redis database through its REST API. The code accepts both the legacy KV-compatible `KV_REST_API_URL`/`KV_REST_API_TOKEN` names and Upstash's `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` names.
+- To enable production persistence, install **Upstash Redis** from the Vercel Marketplace, connect it to this project, and redeploy. Then add `ADMIN_USERNAME`, `ADMIN_PASSWORD_SALT`, and `ADMIN_PASSWORD_HASH` to Vercel Project Settings → Environment Variables for Production and Preview. Those values are generated locally by `npm run setup-admin` and must remain secret.
+- The first deployed request automatically seeds the Redis site record from `data/site.json`. Subsequent dashboard saves update Redis, not the Vercel filesystem.
+- If local saves fail after a file-sync or antivirus scan, restart the website server and retry. The server falls back to a direct write if Windows temporarily blocks the atomic file replacement.
 - `.env` and all environment variants are ignored by Git, except the comment-only `.env.example` template. Existing `data/admin.json` installations remain supported temporarily; rerun `npm run setup-admin -- <username> <long-password>` to migrate the active credentials to `.env`.
 - The dashboard permits a selected trusted administrator to publish text and public URLs. It rejects script tags and `javascript:` links; however, normal operational review of public content is still important.
 - AlAdhan provides calculated salah times, not local iqamah times. Use the public note field to clarify any masjid-specific iqamah schedule.
