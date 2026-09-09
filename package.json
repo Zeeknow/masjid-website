@@ -1,0 +1,14 @@
+{
+  "name": "masjid-ar-rahman-website",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Masjid Ar-Rahman website with a lightweight owner-controlled admin dashboard.",
+  "scripts": {
+    "start": "node server.js",
+    "setup-admin": "node setup-admin.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

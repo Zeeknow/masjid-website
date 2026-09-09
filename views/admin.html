@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Masjid Ar-Rahman | Admin Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/admin.css">
+  </head>
+  <body class="admin-body">
+    <header class="admin-header">
+      <a class="brand" href="/"><img src="/assets/masjid-ar-rahman-logo.jpg" alt="Masjid Ar-Rahman logo"><span class="brand-copy"><strong>Masjid</strong><span>Ar-Rahman</span></span></a>
+      <a class="text-link" href="/">View website <span aria-hidden="true">↗</span></a>
+    </header>
+    <main class="admin-main">
+      <section class="login-panel" id="login-panel" aria-labelledby="login-title">
+        <p class="section-kicker">Protected access</p>
+        <h1 id="login-title">Masjid admin dashboard</h1>
+        <p>Update website information, prayer-time settings, donations, social links, and announcements from one place.</p>
+        <form id="login-form">
+          <label>Username<input id="login-username" autocomplete="username" required></label>
+          <label>Password<input id="login-password" type="password" autocomplete="current-password" required></label>
+          <button class="button button-primary" type="submit">Sign in</button>
+          <p class="form-message" id="login-message" aria-live="polite"></p>
+        </form>
+        <p class="login-help">First time? Ask the website administrator to run <code>npm run setup-admin -- &lt;username&gt; &lt;password&gt;</code>.</p>
+      </section>
+
+      <section class="dashboard" id="dashboard" hidden aria-labelledby="dashboard-title">
+        <div class="dashboard-topline">
+          <div><p class="section-kicker">Owner controls</p><h1 id="dashboard-title">Website settings</h1><p id="dashboard-welcome">Signed in.</p></div>
+          <div class="dashboard-actions"><button class="button button-quiet admin-quiet" id="download-backup" type="button">Download backup</button><button class="button button-primary" id="logout" type="button">Sign out</button></div>
+        </div>
+        <form id="settings-form">
+          <section class="settings-panel"><div class="settings-heading"><span>01</span><div><h2>Identity and welcome</h2><p>Use the words you want visitors to see first.</p></div></div><div class="form-grid two"><label>Masjid name<input id="identity-name" required></label><label>Organization<input id="identity-organization" required></label><label class="full">Tagline<input id="identity-tagline"></label><label class="full">Homepage introduction<textarea id="identity-intro" rows="4" required></textarea></label></div></section>
+          <section class="settings-panel"><div class="settings-heading"><span>02</span><div><h2>Prayer times</h2><p>Use <strong>Manual schedule</strong> to type the times your masjid publishes. Automatic times are optional and calculate from the city you enter.</p></div></div><div class="form-grid two"><label class="full">Prayer-time source<select id="prayer-mode"><option value="manual">Manual schedule - enter the masjid's own times below</option><option value="automatic">Automatic - calculate daily times from city and convention</option></select></label><div class="full prayer-editor-note">For the manual schedule, use 24-hour time: 16:12 displays as 4:12 PM, 19:03 displays as 7:03 PM, and 20:18 displays as 8:18 PM.</div><label>Fajr<input id="manual-fajr" type="time" required></label><label>Dhuhr / Zuhr<input id="manual-dhuhr" type="time" required></label><label>Asr<input id="manual-asr" type="time" required></label><label>Maghrib<input id="manual-maghrib" type="time" required></label><label>Isha<input id="manual-isha" type="time" required></label><label class="full">Public prayer-time note<input id="prayer-note"></label><div class="full automatic-settings"><p>Automatic option settings (only used when Automatic is selected):</p><div class="form-grid two"><label>City<input id="prayer-city" required></label><label>Country<input id="prayer-country" required></label><label class="full">Calculation convention<select id="prayer-method"><option value="2">Islamic Society of North America (ISNA)</option><option value="5">Egyptian General Authority of Survey</option><option value="3">Muslim World League</option><option value="1">University of Islamic Sciences, Karachi</option></select></label></div></div></div></section>
+          <section class="settings-panel"><div class="settings-heading"><span>03</span><div><h2>Contact and map</h2><p>These details are visible to every visitor.</p></div></div><div class="form-grid two"><label class="full">Street address<input id="contact-address" required></label><label class="full">Address note<input id="contact-address-note"></label><label>Phone<input id="contact-phone" type="tel"></label><label>Email<input id="contact-email" type="email"></label><label class="full">Google Maps URL<input id="contact-maps" type="url"></label></div></section>
+          <section class="settings-panel"><div class="settings-heading"><span>04</span><div><h2>Secure donations</h2><p>Use direct payment links from a charity-owned Stripe, PayPal, or Donorbox account. Do not enter card details here.</p></div></div><div class="form-grid two"><label>Zakat payment link<input id="donation-zakat" type="url"></label><label>Sadaqah payment link<input id="donation-sadaqah" type="url"></label><label>General fund payment link<input id="donation-general" type="url"></label><label>Public giving note<input id="donation-note"></label></div></section>
+          <section class="settings-panel"><div class="settings-heading"><span>05</span><div><h2>NISLAM social channels</h2><p>Add complete public URLs, including https://.</p></div></div><div class="form-grid three"><label>WhatsApp<input id="social-whatsapp" type="url"></label><label>Instagram<input id="social-instagram" type="url"></label><label>Facebook<input id="social-facebook" type="url"></label></div></section>
+          <section class="settings-panel"><div class="settings-heading"><span>06</span><div><h2>Announcements and programs</h2><p>Move key news to the top and mark one card as featured.</p></div></div><div class="announcement-editor" id="announcement-editor"></div><button class="button button-secondary" id="add-announcement" type="button">+ Add announcement</button></section>
+          <div class="save-bar"><p id="save-message" aria-live="polite"></p><button class="button button-primary" type="submit">Save and publish changes</button></div>
+        </form>
+      </section>
+    </main>
+    <script src="/admin.js?v=20260907-2"></script>
+  </body>
+</html>
