@@ -102,6 +102,7 @@ function populateForm() {
   value("#donation-zakat", site.donations.zakat);
   value("#donation-sadaqah", site.donations.sadaqah);
   value("#donation-general", site.donations.general);
+  value("#donation-monthly", site.donations.monthly);
   value("#donation-note", site.donations.note);
   value("#social-whatsapp", site.social.whatsapp);
   value("#social-instagram", site.social.instagram);
@@ -141,6 +142,7 @@ function buildSiteFromForm() {
     zakat: $("#donation-zakat").value.trim(),
     sadaqah: $("#donation-sadaqah").value.trim(),
     general: $("#donation-general").value.trim(),
+    monthly: $("#donation-monthly").value.trim(),
     note: $("#donation-note").value.trim()
   };
   site.social = {
@@ -217,7 +219,7 @@ async function initialize() {
   $("#login-form").addEventListener("submit", submitLogin);
   $("#settings-form").addEventListener("submit", saveSite);
   $("#add-announcement").addEventListener("click", () => {
-    site.announcements.push({ title: "New announcement", date: "Community update", body: "Add the announcement details here.", featured: false });
+    site.announcements.push({ title: "New announcement", date: "Announcement", body: "Add the announcement details here.", featured: false });
     renderAnnouncements();
   });
   $("#download-backup").addEventListener("click", downloadBackup);

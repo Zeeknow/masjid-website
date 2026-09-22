@@ -30,6 +30,7 @@
     "zakat": "",
     "sadaqah": "",
     "general": "",
+    "monthly": "",
     "note": "Add charity-owned Stripe, PayPal, or Donorbox payment links in the Admin Dashboard."
   },
   "social": {
@@ -40,7 +41,7 @@
   "announcements": [
     {
       "title": "Welcome to Masjid Ar-Rahman",
-      "date": "Community update",
+      "date": "Announcement",
       "body": "Stay connected here for prayer updates, programs, classes, and community announcements.",
       "featured": true
     },

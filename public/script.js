@@ -138,7 +138,7 @@ function renderAnnouncements() {
     article.className = `announcement-card${announcement.featured || index === 0 ? " featured" : ""}`;
     const date = document.createElement("p");
     date.className = "date";
-    date.textContent = announcement.date || "Community update";
+    date.textContent = announcement.date || "Announcement";
     const title = document.createElement("h3");
     title.textContent = announcement.title;
     const body = document.createElement("p");
