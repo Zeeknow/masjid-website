@@ -55,7 +55,7 @@ function renderAnnouncements() {
     title.input.value = announcement.title || "";
     title.input.dataset.field = "title";
     const date = field("Date / label", "", "text");
-    date.input.value = announcement.date || "";
+    date.input.value = announcement.date?.trim().toLowerCase() === "community update" ? "Announcement" : announcement.date || "";
     date.input.dataset.field = "date";
     const featured = field("Feature on homepage", "", "checkbox");
     featured.input.checked = Boolean(announcement.featured);
