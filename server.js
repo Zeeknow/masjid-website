@@ -217,7 +217,8 @@ function samePassword(password, admin) {
 }
 
 function staticFile(request, response, pathname) {
-  const requested = pathname === "/" ? "/index.html" : pathname;
+  const decodedPathname = decodeURIComponent(pathname);
+  const requested = decodedPathname === "/" ? "/index.html" : decodedPathname;
   const file = resolve(PUBLIC, `.${normalize(requested)}`);
   if (!file.startsWith(PUBLIC) || !existsSync(file)) {
     send(response, 404, "Not found", "text/plain; charset=utf-8");

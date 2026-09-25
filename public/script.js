@@ -229,7 +229,27 @@ function setupNavigation() {
   $("#year").textContent = new Date().getFullYear();
 }
 
+function setupHeroIntro() {
+  const hero = $(".hero");
+  const video = $(".hero-intro-video");
+  if (!hero || !video) return;
+  const revealHero = () => {
+    hero.classList.remove("intro-pending");
+    hero.classList.add("intro-complete");
+    video.pause();
+  };
+  hero.classList.add("intro-pending");
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    revealHero();
+    return;
+  }
+  video.addEventListener("ended", revealHero, { once: true });
+  video.addEventListener("error", revealHero, { once: true });
+  video.play().catch(revealHero);
+}
+
 setupNavigation();
+setupHeroIntro();
 loadSite().catch(() => {
   setText("#prayer-note", "The website details could not be loaded. Please refresh the page or contact the masjid.");
   setText("#location-label", "Prayer time service unavailable");
