@@ -19,6 +19,10 @@
       "Isha": "20:18"
     }
   },
+  "jumuah": {
+    "time": "",
+    "note": ""
+  },
   "contact": {
     "address": "Massachusetts, United States",
     "addressNote": "Add the full street address in the Admin Dashboard.",

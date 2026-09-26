@@ -91,6 +91,21 @@ function renderPrayerTimes() {
   setText("#next-prayer-name", next.name);
   setText("#next-prayer-time", formatPrayerTime(next.time));
   setText("#next-prayer-countdown", next.countdown);
+  renderJumuahNotice();
+}
+
+function renderJumuahNotice() {
+  const notice = $("#jumuah-notice");
+  if (!notice) return;
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: prayerState.timezone || undefined,
+    weekday: "long"
+  }).format(new Date());
+  notice.hidden = weekday !== "Friday";
+  if (notice.hidden) return;
+  const time = site.jumuah?.time?.trim();
+  setText("#jumuah-time", time ? formatPrayerTime(time) : "Time to be announced");
+  setText("#jumuah-note", site.jumuah?.note?.trim() || "Every Friday");
 }
 
 async function fetchPrayerTimes() {
@@ -224,6 +239,7 @@ function setupNavigation() {
     toggle.setAttribute("aria-expanded", "false");
   }));
   $("#refresh-prayer-times").addEventListener("click", fetchPrayerTimes);
+  setInterval(renderJumuahNotice, 60_000);
   $(".dialog-close").addEventListener("click", () => $("#notice-dialog").close());
   $("[data-close-dialog]").addEventListener("click", () => $("#notice-dialog").close());
   $("#year").textContent = new Date().getFullYear();

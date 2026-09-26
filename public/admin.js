@@ -1,3 +1,5 @@
+  value("#jumuah-time", site.jumuah?.time);
+  value("#jumuah-note", site.jumuah?.note);
 const $ = (selector) => document.querySelector(selector);
 let site = null;
 const DEFAULT_MANUAL_TIMES = { Fajr: "05:26", Dhuhr: "12:48", Asr: "16:12", Maghrib: "19:03", Isha: "20:18" };
@@ -130,6 +132,10 @@ function buildSiteFromForm() {
       Maghrib: $("#manual-maghrib").value,
       Isha: $("#manual-isha").value
     }
+  };
+  site.jumuah = {
+    time: $("#jumuah-time").value,
+    note: $("#jumuah-note").value.trim()
   };
   site.contact = {
     address: $("#contact-address").value.trim(),
