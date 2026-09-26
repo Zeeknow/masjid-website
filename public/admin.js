@@ -1,5 +1,3 @@
-  value("#jumuah-time", site.jumuah?.time);
-  value("#jumuah-note", site.jumuah?.note);
 const $ = (selector) => document.querySelector(selector);
 let site = null;
 const DEFAULT_MANUAL_TIMES = { Fajr: "05:26", Dhuhr: "12:48", Asr: "16:12", Maghrib: "19:03", Isha: "20:18" };
@@ -92,6 +90,8 @@ function populateForm() {
   value("#manual-asr", manualTimes.Asr);
   value("#manual-maghrib", manualTimes.Maghrib);
   value("#manual-isha", manualTimes.Isha);
+  value("#jumuah-time", site.jumuah?.time);
+  value("#jumuah-note", site.jumuah?.note);
   value("#prayer-city", site.prayerLocation.city);
   value("#prayer-country", site.prayerLocation.country);
   value("#prayer-method", site.prayerLocation.calculationMethod);
