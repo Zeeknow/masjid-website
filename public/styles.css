@@ -78,3 +78,12 @@ button { font: inherit; }
 .jumuah-notice > strong { grid-column: 2; grid-row: 1 / span 2; color: var(--green); font-family: var(--serif); font-size: 1.8rem; font-weight: 500; }
 .jumuah-notice > p:last-child { grid-column: 1 / -1; margin: .25rem 0 0; color: var(--muted); font-size: .82rem; }
 @media (max-width: 560px) { .jumuah-notice { grid-template-columns: 1fr; }.jumuah-notice > strong { grid-column: auto; grid-row: auto; }.jumuah-notice > p:last-child { grid-column: auto; } }
+@media (min-width: 851px) {
+  .about-section { grid-template-columns: minmax(20rem, .8fr) minmax(22rem, 1.2fr); }
+  .about-copy { padding-right: clamp(1.75rem, 7vw, 7rem); }
+}
+.about-art img { width: min(48%, 18rem); }
+.about-copy .section-kicker { margin-bottom: 1.5rem; }
+.about-copy h2 { line-height: 1.04; }
+.about-copy > p:not(.section-kicker) { margin: 2rem 0 2.5rem; }
+.value-list > div { padding: 1.25rem 0; }

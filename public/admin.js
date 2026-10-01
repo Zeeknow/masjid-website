@@ -105,10 +105,12 @@ function populateForm() {
   value("#donation-sadaqah", site.donations.sadaqah);
   value("#donation-general", site.donations.general);
   value("#donation-monthly", site.donations.monthly);
+  value("#donation-building", site.donations.building);
   value("#donation-note", site.donations.note);
   value("#social-whatsapp", site.social.whatsapp);
   value("#social-instagram", site.social.instagram);
   value("#social-facebook", site.social.facebook);
+  value("#social-youtube", site.social.youtube);
   renderAnnouncements();
 }
 
@@ -149,12 +151,14 @@ function buildSiteFromForm() {
     sadaqah: $("#donation-sadaqah").value.trim(),
     general: $("#donation-general").value.trim(),
     monthly: $("#donation-monthly").value.trim(),
+    building: $("#donation-building").value.trim(),
     note: $("#donation-note").value.trim()
   };
   site.social = {
     whatsapp: $("#social-whatsapp").value.trim(),
     instagram: $("#social-instagram").value.trim(),
-    facebook: $("#social-facebook").value.trim()
+    facebook: $("#social-facebook").value.trim(),
+    youtube: $("#social-youtube").value.trim()
   };
   return site;
 }

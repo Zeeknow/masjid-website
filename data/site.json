@@ -35,12 +35,14 @@
     "sadaqah": "",
     "general": "",
     "monthly": "",
+    "building": "",
     "note": "Add charity-owned Stripe, PayPal, or Donorbox payment links in the Admin Dashboard."
   },
   "social": {
     "whatsapp": "",
     "instagram": "",
-    "facebook": ""
+    "facebook": "",
+    "youtube": ""
   },
   "announcements": [
     {

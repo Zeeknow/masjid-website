@@ -194,8 +194,8 @@ function applyContactAndSocial() {
     email.href = `mailto:${contact.email}`;
   }
   wireExternalLink("map-link", contact.mapsUrl, "Map link to be confirmed", "The exact address has not been added yet. Please contact the masjid before your first visit.");
-  ["whatsapp", "instagram", "facebook"].forEach((network) => {
-    const title = network[0].toUpperCase() + network.slice(1);
+  ["whatsapp", "instagram", "facebook", "youtube"].forEach((network) => {
+    const title = network === "youtube" ? "YouTube" : network[0].toUpperCase() + network.slice(1);
     const body = `The masjid’s ${title} link will be added by the administrator.`;
     wireExternalLink(`top-${network}`, social[network], `${title} coming soon`, body);
     wireExternalLink(`contact-${network}`, social[network], `${title} coming soon`, body);
