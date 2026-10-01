@@ -9,6 +9,10 @@ const FALLBACK_TIMES = {
 const $ = (selector) => document.querySelector(selector);
 let site = null;
 let prayerState = { timings: FALLBACK_TIMES, source: "draft", timezone: "America/New_York" };
+let announcementIndex = 0;
+let announcementTimer = null;
+let announcementPaused = false;
+const announcementMotionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 function setText(selector, value) {
   const element = $(selector);
@@ -97,12 +101,7 @@ function renderPrayerTimes() {
 function renderJumuahNotice() {
   const notice = $("#jumuah-notice");
   if (!notice) return;
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: prayerState.timezone || undefined,
-    weekday: "long"
-  }).format(new Date());
-  notice.hidden = weekday !== "Friday";
-  if (notice.hidden) return;
+  notice.hidden = false;
   const time = site.jumuah?.time?.trim();
   setText("#jumuah-time", time ? formatPrayerTime(time) : "Time to be announced");
   setText("#jumuah-note", site.jumuah?.note?.trim() || "Every Friday");
@@ -162,6 +161,56 @@ function renderAnnouncements() {
     article.append(date, title, body);
     container.append(article);
   });
+  updateAnnouncementCarousel();
+  startAnnouncementAutoplay();
+}
+
+function updateAnnouncementCarousel() {
+  const cards = [...$("#announcements").children];
+  if (cards.length) announcementIndex = ((announcementIndex % cards.length) + cards.length) % cards.length;
+  cards.forEach((card, index) => {
+    const active = index === announcementIndex;
+    card.hidden = !active;
+    card.classList.toggle("is-active", active);
+    card.setAttribute("aria-hidden", String(!active));
+  });
+  $("#announcement-controls").hidden = cards.length < 2;
+  setText("#announcement-count", cards.length ? `${announcementIndex + 1} / ${cards.length}` : "0 / 0");
+}
+
+function stopAnnouncementAutoplay() {
+  window.clearInterval(announcementTimer);
+  announcementTimer = null;
+}
+
+function startAnnouncementAutoplay() {
+  stopAnnouncementAutoplay();
+  if (announcementPaused || announcementMotionPreference.matches || site.announcements.length < 2) return;
+  announcementTimer = window.setInterval(() => {
+    announcementIndex += 1;
+    updateAnnouncementCarousel();
+  }, 6000);
+}
+
+function moveAnnouncement(step) {
+  if (site.announcements.length < 2) return;
+  announcementIndex += step;
+  updateAnnouncementCarousel();
+  startAnnouncementAutoplay();
+}
+
+function setupAnnouncementCarousel() {
+  $("#announcement-prev").addEventListener("click", () => moveAnnouncement(-1));
+  $("#announcement-next").addEventListener("click", () => moveAnnouncement(1));
+  const pause = $("#announcement-pause");
+  pause.addEventListener("click", () => {
+    announcementPaused = !announcementPaused;
+    pause.textContent = announcementPaused ? "Play" : "Pause";
+    pause.setAttribute("aria-label", `${announcementPaused ? "Resume" : "Pause"} automatic announcements`);
+    pause.setAttribute("aria-pressed", String(announcementPaused));
+    startAnnouncementAutoplay();
+  });
+  announcementMotionPreference.addEventListener("change", startAnnouncementAutoplay);
 }
 
 function wireExternalLink(id, url, fallbackTitle, fallbackBody) {
@@ -185,7 +234,7 @@ function applyContactAndSocial() {
   setText("#community-line", identity.organization);
   setText("#footer-organization", identity.organization);
   setText("#hero-intro", identity.intro);
-  setText("#about-text", identity.intro);
+  setText("#announcement-text", identity.announcement || "Announcements from Masjid Ar-Rahman will appear here.");
   setText("#contact-address", contact.address + (contact.addressNote ? ` - ${contact.addressNote}` : ""));
   setText("#contact-phone", contact.phone || "Add a public phone number in the Admin Dashboard.");
   const email = $("#contact-email");
@@ -265,6 +314,7 @@ function setupHeroIntro() {
 }
 
 setupNavigation();
+setupAnnouncementCarousel();
 setupHeroIntro();
 loadSite().catch(() => {
   setText("#prayer-note", "The website details could not be loaded. Please refresh the page or contact the masjid.");

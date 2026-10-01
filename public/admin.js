@@ -83,6 +83,7 @@ function populateForm() {
   value("#identity-organization", site.identity.organization);
   value("#identity-tagline", site.identity.tagline);
   value("#identity-intro", site.identity.intro);
+  value("#identity-announcement", site.identity.announcement);
   const manualTimes = { ...DEFAULT_MANUAL_TIMES, ...(site.prayerLocation.manualTimes || {}) };
   value("#prayer-mode", site.prayerLocation.mode || "manual");
   value("#manual-fajr", manualTimes.Fajr);
@@ -119,7 +120,8 @@ function buildSiteFromForm() {
     name: $("#identity-name").value.trim(),
     organization: $("#identity-organization").value.trim(),
     tagline: $("#identity-tagline").value.trim(),
-    intro: $("#identity-intro").value.trim()
+    intro: $("#identity-intro").value.trim(),
+    announcement: $("#identity-announcement").value.trim()
   };
   site.prayerLocation = {
     mode: $("#prayer-mode").value,
