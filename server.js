@@ -262,6 +262,11 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (["GET", "HEAD"].includes(request.method) && ["/about", "/about/"].includes(pathname)) {
+      staticFile(request, response, "/about.html");
+      return;
+    }
+
     if (request.method === "GET" && pathname === "/api/site") {
       sendJson(response, 200, await readSite());
       return;
